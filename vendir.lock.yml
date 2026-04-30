@@ -1,0 +1,9 @@
+apiVersion: vendir.k14s.io/v1alpha1
+directories:
+- contents:
+  - githubRelease:
+      tag: v0.9.0
+      url: https://api.github.com/repos/cloudnative-pg/plugin-barman-cloud/releases/260264428
+    path: .
+  path: base/vendor/plugin-barman-cloud
+kind: LockConfig

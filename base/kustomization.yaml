@@ -2,7 +2,61 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
+namespace: cnpg-system
+
 resources:
   - namespace.yaml
-  - operator.yaml
-  - barman-cloud-plugin.yaml
+  - vendor/plugin-barman-cloud/manifest.yaml
+
+# Render the operator from the upstream Helm chart at build time.
+# Bumping `version` below is the entire upgrade procedure — kustomize
+# pulls the chart, expands the values, and emits the manifests as part
+# of the build (no `helm template` step to commit).
+helmCharts:
+  - name: cloudnative-pg
+    repo: https://cloudnative-pg.github.io/charts
+    version: 0.26.1
+    releaseName: cnpg
+    namespace: cnpg-system
+    includeCRDs: true
+    valuesInline:
+      # Sized from observed peak memory in cnpg-system over the last
+      # 30 days (74 MiB working-set on the manager container) plus
+      # headroom for cluster-reconcile spikes that rate() sampling
+      # doesn't capture. Revisit once we have CNPG-managed Clusters
+      # producing real load.
+      resources:
+        requests:
+          cpu: 50m
+          memory: 96Mi
+        limits:
+          cpu: 500m
+          memory: 256Mi
+
+# Apply organizational requirements to the Barman Cloud Plugin
+# Deployment that the upstream manifest doesn't carry: required
+# `app.kubernetes.io/{name,instance}` labels (rendered-manifests
+# kubernetes.rego) and resource limits (peak ~32 MiB memory observed
+# over 30d, with headroom).
+patches:
+  - target:
+      group: apps
+      version: v1
+      kind: Deployment
+      name: barman-cloud
+    patch: |
+      - op: add
+        path: /metadata/labels/app.kubernetes.io~1name
+        value: plugin-barman-cloud
+      - op: add
+        path: /metadata/labels/app.kubernetes.io~1instance
+        value: plugin-barman-cloud
+      - op: add
+        path: /spec/template/spec/containers/0/resources
+        value:
+          requests:
+            cpu: 25m
+            memory: 64Mi
+          limits:
+            cpu: 250m
+            memory: 192Mi
