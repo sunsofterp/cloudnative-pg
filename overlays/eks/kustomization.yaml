@@ -1,0 +1,11 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# EKS-specific overlay. No patches today — EKS consumes the base
+# rendered manifests as-is, identical to OKE. Kept as a distinct
+# overlay so cluster-specific divergence can land cleanly later
+# (StorageClass, PullSecrets, scheduling constraints, etc.) without
+# splitting the base.
+resources:
+  - ../../base
