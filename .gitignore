@@ -1,0 +1,2 @@
+# kustomize helmCharts: cache. Pulled fresh on every build (kustomize/ArgoCD).
+base/charts/

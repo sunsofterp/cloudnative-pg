@@ -6,6 +6,7 @@ CloudNativePG operator manifests, deployed to multiple clusters via Kustomize ov
 
 - `vendir.yml` / `vendir.lock.yml` at the repo root pin external manifest artifacts (Barman Cloud Plugin). Run `vendir sync` from the repo root to regenerate `base/vendor/`. The synced content is committed.
 - `base/kustomization.yaml` renders the operator from the upstream Helm chart at build time via `helmCharts:` (chart `cloudnative-pg`, repo `https://cloudnative-pg.github.io/charts`). The chart's resource limits/requests come from `valuesInline.resources`. The Barman manifest is referenced via `resources: vendor/plugin-barman-cloud/manifest.yaml` and patched in-place to add required labels and resource limits.
+- `base/charts/` is **gitignored** — kustomize pulls the chart fresh on each `--enable-helm` build, both locally and in ArgoCD's repo-server. Don't commit anything from there. (The `.gitignore` exists for this reason.)
 - `overlays/<cluster>/` references `../../base`. Today only `overlays/oke/` exists; future clusters add their own overlay with whatever cluster-specific patches they need.
 - ArgoCD Applications point at an overlay, never at `base/` directly.
 
