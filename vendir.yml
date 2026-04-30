@@ -1,0 +1,33 @@
+---
+# Vendor the Barman Cloud Plugin manifest from its upstream GitHub
+# release. The plugin is published as a single manifest.yaml asset on
+# each release; we pin the tag here and commit the synced manifest
+# under vendor/ so the build is reproducible without network access at
+# kustomize-build time.
+#
+# Update procedure:
+#   1. Bump `tag` below to the new release.
+#   2. Run `vendir sync` from the repo root.
+#   3. Commit the updated vendor/ + vendir.lock.yml.
+#
+# Releases: https://github.com/cloudnative-pg/plugin-barman-cloud/releases
+apiVersion: vendir.k14s.io/v1alpha1
+kind: Config
+directories:
+  # Vendir reads/writes paths relative to the file containing this
+  # config. We deliberately place the synced manifest *inside* base/
+  # so kustomize's default load-restrictor (LoadRestrictionsRootOnly)
+  # accepts the resource reference from base/kustomization.yaml.
+  - path: base/vendor/plugin-barman-cloud
+    contents:
+      - path: .
+        githubRelease:
+          slug: cloudnative-pg/plugin-barman-cloud
+          tag: v0.9.0
+          assetNames:
+            - manifest.yaml
+          # plugin-barman-cloud releases don't carry SHA256 checksums in
+          # their release notes; vendir's auto-validation only parses
+          # release-note-embedded hashes (not GitHub's API digest field).
+          # See https://carvel.dev/vendir/docs/latest/vendir-spec/#githubrelease
+          disableAutoChecksumValidation: true
