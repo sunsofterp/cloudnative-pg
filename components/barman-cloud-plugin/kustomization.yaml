@@ -1,0 +1,47 @@
+---
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+
+# Barman Cloud Plugin as an OPT-IN component. Split out of base/ because the
+# plugin is not universally deployable: its manifest carries cert-manager
+# Certificate/Issuer resources, so it can only land on clusters that run
+# cert-manager — which the internal-services child cluster (rehearsal estate,
+# no backups by design) does not. Production overlays (oke, eks) include this
+# component and render exactly what base/ used to produce; plugin-free
+# clusters take base alone.
+#
+# The vendored manifest lives INSIDE this component (kustomize's default
+# load-restrictor only accepts references at or below the kustomization
+# root); vendir.yml's directory path points here.
+namespace: cnpg-system
+
+resources:
+  - vendor/plugin-barman-cloud/manifest.yaml
+
+# Apply organizational requirements to the Barman Cloud Plugin
+# Deployment that the upstream manifest doesn't carry: required
+# `app.kubernetes.io/{name,instance}` labels (rendered-manifests
+# kubernetes.rego) and resource limits (peak ~32 MiB memory observed
+# over 30d, with headroom).
+patches:
+  - target:
+      group: apps
+      version: v1
+      kind: Deployment
+      name: barman-cloud
+    patch: |
+      - op: add
+        path: /metadata/labels/app.kubernetes.io~1name
+        value: plugin-barman-cloud
+      - op: add
+        path: /metadata/labels/app.kubernetes.io~1instance
+        value: plugin-barman-cloud
+      - op: add
+        path: /spec/template/spec/containers/0/resources
+        value:
+          requests:
+            cpu: 25m
+            memory: 64Mi
+          limits:
+            cpu: 250m
+            memory: 192Mi

@@ -4,9 +4,12 @@ kind: Kustomization
 
 namespace: cnpg-system
 
+# Operator only. The Barman Cloud Plugin moved to
+# components/barman-cloud-plugin (opt-in: its manifest needs cert-manager on
+# the destination, which not every cluster runs); overlays that want it list
+# the component alongside this base.
 resources:
   - namespace.yaml
-  - vendor/plugin-barman-cloud/manifest.yaml
 
 # Render the operator from the upstream Helm chart at build time.
 # Bumping `version` below is the entire upgrade procedure — kustomize
@@ -32,31 +35,3 @@ helmCharts:
         limits:
           cpu: 500m
           memory: 256Mi
-
-# Apply organizational requirements to the Barman Cloud Plugin
-# Deployment that the upstream manifest doesn't carry: required
-# `app.kubernetes.io/{name,instance}` labels (rendered-manifests
-# kubernetes.rego) and resource limits (peak ~32 MiB memory observed
-# over 30d, with headroom).
-patches:
-  - target:
-      group: apps
-      version: v1
-      kind: Deployment
-      name: barman-cloud
-    patch: |
-      - op: add
-        path: /metadata/labels/app.kubernetes.io~1name
-        value: plugin-barman-cloud
-      - op: add
-        path: /metadata/labels/app.kubernetes.io~1instance
-        value: plugin-barman-cloud
-      - op: add
-        path: /spec/template/spec/containers/0/resources
-        value:
-          requests:
-            cpu: 25m
-            memory: 64Mi
-          limits:
-            cpu: 250m
-            memory: 192Mi
