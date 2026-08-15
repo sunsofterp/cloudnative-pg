@@ -1,0 +1,13 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# internal-services child cluster (rehearsal estate): the operator WITHOUT
+# the Barman Cloud Plugin component. The plugin's manifest carries
+# cert-manager Certificate/Issuer resources and the child runs no
+# cert-manager — and the child's database deliberately has no backup store
+# (disposable estate), so the plugin would be dead weight even if it could
+# apply. The component returns if the child ever grows cert-manager and a
+# backup design.
+resources:
+  - ../../base

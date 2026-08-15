@@ -5,5 +5,5 @@ directories:
       tag: v0.9.0
       url: https://api.github.com/repos/cloudnative-pg/plugin-barman-cloud/releases/260264428
     path: .
-  path: base/vendor/plugin-barman-cloud
+  path: components/barman-cloud-plugin/vendor/plugin-barman-cloud
 kind: LockConfig
