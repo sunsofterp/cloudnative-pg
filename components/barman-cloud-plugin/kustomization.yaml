@@ -45,3 +45,20 @@ patches:
           limits:
             cpu: 250m
             memory: 192Mi
+      # ESTATE IMAGES (fork-first, Michael's 2026-08-16 ruling): wholesale
+      # image replacement inside the unchanged upstream shape. Both refs are
+      # ENV-GENERIC PLACEHOLDERS — the iak ApplicationSet patches the real
+      # per-environment OCIR paths (the mirror/ dir is the supply side; the
+      # copy is digest-preserving so digests are env-invariant). The
+      # SIDECAR_IMAGE indirection through the upstream secretGenerator Secret
+      # is collapsed to a direct env value: the hashed Secret name churns on
+      # every upstream re-vendor, and a value is both stable to patch and
+      # honest — the ref is config, not a secret.
+      - op: replace
+        path: /spec/template/spec/containers/0/image
+        value: iad.ocir.io/idfkrwsy40sd/cnpg/plugin-barman-cloud:env-generic-placeholder
+      - op: replace
+        path: /spec/template/spec/containers/0/env/0
+        value:
+          name: SIDECAR_IMAGE
+          value: iad.ocir.io/idfkrwsy40sd/cnpg/barman-cloud-sidecar:env-generic-placeholder

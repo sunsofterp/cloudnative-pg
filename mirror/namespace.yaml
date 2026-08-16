@@ -1,0 +1,9 @@
+---
+# The cnpg-system namespace on the ORCHESTRATOR — holds only the supply-side
+# carriers below (the operator + plugin run on target clusters, which get
+# their namespace from base/). Same name on both clusters by design: one
+# project boundary (iak AppProject cnpg-system, project == namespace).
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cnpg-system
