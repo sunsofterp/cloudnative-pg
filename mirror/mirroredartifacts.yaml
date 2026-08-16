@@ -1,0 +1,55 @@
+---
+# Mirror declarations for the ESTATE-built Barman Cloud Plugin images (the
+# sunsofterp fork carrying the native OCI Object Storage barman provider —
+# fork-first, rebasable; see the plugin repo's estate-release workflow).
+# Release assets (OCI image-layout tarballs) are copied into THIS cluster's
+# OCIR compartment digest-preserving; targets are env-generic placeholders
+# the iak ApplicationSet patches per environment.
+#
+# sourceDigest is each image's OCI manifest digest from the release body —
+# scan/policy subject identity today (refuse-on-mismatch is an open operator
+# work item); the load-bearing content-address check is the digest pin the
+# consuming component carries after the iak patch.
+#
+# WRAPPED IN OptionalManifests CARRIERS (iak gap #14 / ADR-075): the
+# MirroredArtifact CRD arrives with the provenance-lifecycle app at runtime,
+# and a raw manifest with an unserved GVK poisons the whole Application's
+# atomic sync. Carriers apply clean immediately; the operator materializes
+# the inner manifests once the CRD is served.
+apiVersion: resources.sunsofterp.com/v1
+kind: OptionalManifests
+metadata:
+  name: plugin-barman-cloud-image
+  namespace: cnpg-system
+spec:
+  manifests:
+    - apiVersion: mirror.sunsofterp.com/v1alpha1
+      kind: MirroredArtifact
+      metadata:
+        name: plugin-barman-cloud-image
+        namespace: cnpg-system
+      spec:
+        type: oci
+        source: github-release://sunsofterp/plugin-barman-cloud@v0.14.0-sunsofterp.1/plugin-barman-cloud-v0.14.0-sunsofterp.1.oci.tar
+        sourceDigest: sha256:9c627fbcc9b10fe825a05b263bca6424506a4b226e4cdd1fe714702d647e1e95
+        target: iad.ocir.io/idfkrwsy40sd/cnpg/plugin-barman-cloud:env-generic-placeholder
+        interval: 10m
+---
+apiVersion: resources.sunsofterp.com/v1
+kind: OptionalManifests
+metadata:
+  name: barman-cloud-sidecar-image
+  namespace: cnpg-system
+spec:
+  manifests:
+    - apiVersion: mirror.sunsofterp.com/v1alpha1
+      kind: MirroredArtifact
+      metadata:
+        name: barman-cloud-sidecar-image
+        namespace: cnpg-system
+      spec:
+        type: oci
+        source: github-release://sunsofterp/plugin-barman-cloud@v0.14.0-sunsofterp.1/barman-cloud-sidecar-v0.14.0-sunsofterp.1.oci.tar
+        sourceDigest: sha256:1523000933ff03472c93df70788c698f6d76688391f2e428f4ba7b47920d760f
+        target: iad.ocir.io/idfkrwsy40sd/cnpg/barman-cloud-sidecar:env-generic-placeholder
+        interval: 10m

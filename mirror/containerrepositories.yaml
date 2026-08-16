@@ -1,0 +1,47 @@
+---
+# ContainerRepository MRs for the mirror targets (never create-on-push —
+# Michael's standing ruling). displayName + compartmentId are per-cluster,
+# patched by the iak ApplicationSet; placeholders are deliberately
+# non-resolving. Same carrier rationale as the MirroredArtifacts: the CRD
+# comes from provider-oci-artifacts at runtime.
+apiVersion: resources.sunsofterp.com/v1
+kind: OptionalManifests
+metadata:
+  name: repo-plugin-barman-cloud
+  namespace: cnpg-system
+spec:
+  manifests:
+    - apiVersion: artifacts.oci.m.upbound.io/v1alpha1
+      kind: ContainerRepository
+      metadata:
+        name: repo-plugin-barman-cloud
+        namespace: cnpg-system
+      spec:
+        forProvider:
+          compartmentId: ocid1.compartment.oc1..aaaaaaaaenvgenericplaceholderenvgenericplaceholderenvgenericpl
+          displayName: cnpg/plugin-barman-cloud:env-generic-placeholder
+          isPublic: false
+        providerConfigRef:
+          kind: ClusterProviderConfig
+          name: default
+---
+apiVersion: resources.sunsofterp.com/v1
+kind: OptionalManifests
+metadata:
+  name: repo-barman-cloud-sidecar
+  namespace: cnpg-system
+spec:
+  manifests:
+    - apiVersion: artifacts.oci.m.upbound.io/v1alpha1
+      kind: ContainerRepository
+      metadata:
+        name: repo-barman-cloud-sidecar
+        namespace: cnpg-system
+      spec:
+        forProvider:
+          compartmentId: ocid1.compartment.oc1..aaaaaaaaenvgenericplaceholderenvgenericplaceholderenvgenericpl
+          displayName: cnpg/barman-cloud-sidecar:env-generic-placeholder
+          isPublic: false
+        providerConfigRef:
+          kind: ClusterProviderConfig
+          name: default

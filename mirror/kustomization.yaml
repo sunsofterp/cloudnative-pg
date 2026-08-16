@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# The SUPPLY side of the estate's Barman Cloud Plugin images, deployed on the
+# ORCHESTRATOR (not the target cluster): the provenance-lifecycle mirror
+# operator copies both release assets into this cluster's OCIR compartment,
+# and the ContainerRepository MRs create the repos it pushes into (never
+# create-on-push). Consumed by an iak cnpg-mirror ApplicationSet whose
+# kustomize patches fill the per-environment target/compartment/displayName;
+# the barman-cloud-plugin component digest-pins the mirrored images after its
+# own iak patch (Solstice's two-app supply/consume pattern).
+resources:
+  - namespace.yaml
+  - mirroredartifacts.yaml
+  - containerrepositories.yaml
