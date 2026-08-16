@@ -24,7 +24,7 @@ directories:
       - path: .
         githubRelease:
           slug: cloudnative-pg/plugin-barman-cloud
-          tag: v0.9.0
+          tag: v0.14.0
           assetNames:
             - manifest.yaml
           # plugin-barman-cloud releases don't carry SHA256 checksums in
