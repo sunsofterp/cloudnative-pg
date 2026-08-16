@@ -57,6 +57,12 @@ patches:
       - op: replace
         path: /spec/template/spec/containers/0/image
         value: iad.ocir.io/idfkrwsy40sd/cnpg/plugin-barman-cloud:env-generic-placeholder
+      # Positional guard (repo CLAUDE.md): a re-vendor that adds or reorders
+      # env vars must fail the build loudly, never silently patch the wrong
+      # var.
+      - op: test
+        path: /spec/template/spec/containers/0/env/0/name
+        value: SIDECAR_IMAGE
       - op: replace
         path: /spec/template/spec/containers/0/env/0
         value:
