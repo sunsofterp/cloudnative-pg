@@ -8,7 +8,7 @@ CloudNativePG operator manifests, deployed to multiple clusters via Kustomize ov
 - `base/kustomization.yaml` renders the OPERATOR ONLY from the upstream Helm chart at build time via `helmCharts:` (chart `cloudnative-pg`, repo `https://cloudnative-pg.github.io/charts`). The chart's resource limits/requests come from `valuesInline.resources`.
 - `components/barman-cloud-plugin/` is the Barman Cloud Plugin as an OPT-IN kustomize Component: the vendored manifest, the label/resource patches, and its own `namespace: cnpg-system` transform (components don't inherit the base's). Opt-in because the manifest carries cert-manager Certificate/Issuer resources — it can only land on clusters that run cert-manager.
 - `base/charts/` is **gitignored** — ArgoCD's repo-server always pulls the chart fresh (clean checkout), but LOCALLY kustomize REUSES an existing `base/charts/` dir even after a version bump: after changing `helmCharts[0].version`, `rm -rf base/charts` before verifying the render or you'll silently render the OLD operator. Don't commit anything from there. (The `.gitignore` exists for this reason.)
-- `overlays/<cluster>/` references `../../base`, plus `components: [../../components/barman-cloud-plugin]` where the plugin belongs. `overlays/oke/` and `overlays/eks/` include the component; `overlays/internal-services/` (the rehearsal child cluster — no cert-manager, no backup store) takes base alone.
+- `overlays/<cluster>/` references `../../base`, plus `components: [../../components/barman-cloud-plugin]` where the plugin belongs. All three overlays (`oke`, `eks`, `internal-services`) include the component today — the child gained cert-manager and a backup store with the ADR-080 Keycloak prototype. Note the component's image refs are env-generic placeholders on `internal-services`' consumers: the iak ApplicationSet patches the estate-fork images per environment.
 - ArgoCD Applications point at an overlay, never at `base/` directly.
 
 ## Resource sizing
@@ -34,7 +34,7 @@ ArgoCD's repo-server runs kustomize with `--enable-helm`, so this matches what A
 ## When adding a new cluster
 
 1. Create `overlays/<cluster>/kustomization.yaml` referencing `../../base`. Start with no patches.
-2. Decide the plugin question explicitly: add `components: [../../components/barman-cloud-plugin]` only if the cluster runs cert-manager AND its databases will use Barman backups — omitting the component was the entire reason it exists (the internal-services child does neither).
+2. Decide the plugin question explicitly: add `components: [../../components/barman-cloud-plugin]` only if the cluster runs cert-manager AND its databases will use Barman backups — omitting the component is the entire reason it exists (the internal-services child once satisfied neither predicate and took base alone; both flipped with the ADR-080 backup prototype).
 3. If the cluster needs cluster-specific config (StorageClass, pull secrets, etc.), add it as a patch in that overlay.
 4. Open a PR in `internal-applications-kub` adding the new ArgoCD Application + AppProject. AppProject name must equal the destination namespace per iak's policy.
 

@@ -2,12 +2,16 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-# internal-services child cluster (rehearsal estate): the operator WITHOUT
-# the Barman Cloud Plugin component. The plugin's manifest carries
-# cert-manager Certificate/Issuer resources and the child runs no
-# cert-manager — and the child's database deliberately has no backup store
-# (disposable estate), so the plugin would be dead weight even if it could
-# apply. The component returns if the child ever grows cert-manager and a
-# backup design.
+# internal-services child cluster (rehearsal estate): operator + the Barman
+# Cloud Plugin component. Both predicates that once excluded the component
+# now hold: the child runs cert-manager (v1.21.1, iak wave 38 — the plugin's
+# Certificate/Issuer resources apply), and the child's database is getting a
+# backup store (the ADR-080 Keycloak backup prototype — XObjectStorage claim
+# + keyless barman via the estate's forked plugin images, which the
+# component's env-generic refs resolve to through the iak per-environment
+# patches).
 resources:
   - ../../base
+
+components:
+  - ../../components/barman-cloud-plugin
