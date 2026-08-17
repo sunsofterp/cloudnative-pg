@@ -5,10 +5,10 @@ kind: Component
 # Barman Cloud Plugin as an OPT-IN component. Split out of base/ because the
 # plugin is not universally deployable: its manifest carries cert-manager
 # Certificate/Issuer resources, so it can only land on clusters that run
-# cert-manager — which the internal-services child cluster (rehearsal estate,
-# no backups by design) does not. Production overlays (oke, eks) include this
-# component and render exactly what base/ used to produce; plugin-free
-# clusters take base alone.
+# cert-manager. All three overlays include it today — internal-services
+# joined when the child gained cert-manager and its backup store (the
+# ADR-080 Keycloak prototype); the opt-in split remains for any future
+# plugin-free cluster, which takes base alone.
 #
 # The vendored manifest lives INSIDE this component (kustomize's default
 # load-restrictor only accepts references at or below the kustomization
