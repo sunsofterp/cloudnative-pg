@@ -1,0 +1,27 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# CRDs ONLY, for the ORCHESTRATOR — no operator, no webhooks, no namespace.
+#
+# WHY (XPostgres substrate prerequisite #2, crossplane-platform xpostgres
+# xrd.yaml): the XPostgres composition wraps CNPG resources in kubernetes.m
+# Object MRs that materialize on a CHILD cluster, but Crossplane's realtime
+# compositions informer-watch the wrapped GVK on the LOCAL (orchestrator)
+# API server — the kinds must be SERVED here even though nothing reconciles
+# them here (iak ADR-067 is the companion RBAC half). No CNPG operator runs
+# on the orchestrator, so no local CNPG CR is ever actuated.
+#
+# STATIC EXTRACTS, not a helm render: the chart gates CRDs behind
+# `.Values.crds.create` inside a full-operator render, and kustomize cannot
+# filter a helmCharts render down to one kind. These files are the CRD
+# documents extracted from the SAME sources the base deploys:
+#   - cnpg-crds.yaml          ← chart cloudnative-pg 0.29.0 (base render)
+#   - barman-plugin-crds.yaml ← components/barman-cloud-plugin vendored
+#                               manifest (ObjectStore)
+# ON UPGRADE of the base chart version or the vendored plugin manifest,
+# RE-EXTRACT these files in the same commit — CI schema validation and the
+# orchestrator's informer both fail loudly on drift, but keep them in
+# lockstep by construction.
+resources:
+  - cnpg-crds.yaml
+  - barman-plugin-crds.yaml
