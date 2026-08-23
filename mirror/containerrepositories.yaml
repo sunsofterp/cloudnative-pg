@@ -1,9 +1,14 @@
 ---
-# ContainerRepository MRs for the mirror targets (never create-on-push —
-# Michael's standing ruling). displayName + compartmentId are per-cluster,
-# patched by the iak ApplicationSet; placeholders are deliberately
-# non-resolving. Same carrier rationale as the MirroredArtifacts: the CRD
-# comes from provider-oci-artifacts at runtime.
+# XContainerRepository claims for the two barman-cloud mirror targets
+# (fact-injection, 2026-08-23): each claim names only its repo path; the
+# composition (crossplane-platform #70) injects compartmentOcid and the
+# -<environment> displayName suffix from the tier-3-seeded cluster-facts
+# EnvironmentConfig — the per-cluster iak patches these carriers used to need
+# (the per-cycle compartment-repin surface) are removed in the paired iak PR.
+# STILL WRAPPED IN OptionalManifests CARRIERS (iak ADR-075): the
+# XContainerRepository CRD arrives with the crossplane-platform app at
+# runtime; the carriers apply clean immediately and the optional-manifests
+# operator materializes the claims once the CRD is served.
 apiVersion: resources.sunsofterp.com/v1
 kind: OptionalManifests
 metadata:
@@ -11,19 +16,13 @@ metadata:
   namespace: cnpg-system
 spec:
   manifests:
-    - apiVersion: artifacts.oci.m.upbound.io/v1alpha1
-      kind: ContainerRepository
+    - apiVersion: registry.platform.sunsofterp.com/v1alpha1
+      kind: XContainerRepository
       metadata:
         name: repo-plugin-barman-cloud
         namespace: cnpg-system
       spec:
-        forProvider:
-          compartmentId: ocid1.compartment.oc1..aaaaaaaaenvgenericplaceholderenvgenericplaceholderenvgenericpl
-          displayName: cnpg/plugin-barman-cloud:env-generic-placeholder
-          isPublic: false
-        providerConfigRef:
-          kind: ClusterProviderConfig
-          name: default
+        repositoryPath: cnpg/plugin-barman-cloud
 ---
 apiVersion: resources.sunsofterp.com/v1
 kind: OptionalManifests
@@ -32,16 +31,10 @@ metadata:
   namespace: cnpg-system
 spec:
   manifests:
-    - apiVersion: artifacts.oci.m.upbound.io/v1alpha1
-      kind: ContainerRepository
+    - apiVersion: registry.platform.sunsofterp.com/v1alpha1
+      kind: XContainerRepository
       metadata:
         name: repo-barman-cloud-sidecar
         namespace: cnpg-system
       spec:
-        forProvider:
-          compartmentId: ocid1.compartment.oc1..aaaaaaaaenvgenericplaceholderenvgenericplaceholderenvgenericpl
-          displayName: cnpg/barman-cloud-sidecar:env-generic-placeholder
-          isPublic: false
-        providerConfigRef:
-          kind: ClusterProviderConfig
-          name: default
+        repositoryPath: cnpg/barman-cloud-sidecar
